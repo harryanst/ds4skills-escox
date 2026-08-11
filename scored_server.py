@@ -46,9 +46,11 @@ print("Model and ESCO skill embeddings loaded.")
 
 
 def split_clauses(text):
-    """Same clause boundaries esco_skill_extractor uses internally: newlines,
-    tabs, periods, commas, semicolons, and the words 'and'/'or'."""
-    return [s.strip() for s in re.split(r"\r|\n|\t|\.|\,|\;|and|or", text or "") if s.strip()]
+    """Clause boundaries: newlines, tabs, periods, commas, semicolons, and the
+    standalone words 'and'/'or' (word-boundaried — unlike esco_skill_extractor's
+    own internal splitter, this won't tear apart words like "algorithms" or
+    "coordinate" just because they contain the substring "or")."""
+    return [s.strip() for s in re.split(r"\r|\n|\t|\.|\,|\;|\band\b|\bor\b", text or "") if s.strip()]
 
 
 def score_text(text):
