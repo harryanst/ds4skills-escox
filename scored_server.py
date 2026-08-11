@@ -27,13 +27,21 @@ from sentence_transformers import util
 
 from esco_skill_extractor import SkillExtractor
 
-MODEL  = os.environ.get("ESCOX_MODEL", "all-MiniLM-L6-v2")
-DEVICE = os.environ.get("ESCOX_DEVICE") or None
-TOP_K  = int(os.environ.get("ESCOX_TOP_K", "3"))     # candidates kept per clause
-FLOOR  = float(os.environ.get("ESCOX_FLOOR", "0.3")) # absolute safety floor
+TOP_K = int(os.environ.get("ESCOX_TOP_K", "3"))     # candidates kept per clause
+FLOOR = float(os.environ.get("ESCOX_FLOOR", "0.3")) # absolute safety floor
 
-print(f"Loading SkillExtractor(model={MODEL!r}, device={DEVICE!r})...")
-extractor = SkillExtractor(model=MODEL, device=DEVICE)
+print("Loading SkillExtractor with its own defaults...")
+extractor = SkillExtractor()
+
+for attr in ("_model", "_skill_embeddings", "_skill_ids", "device"):
+    if not hasattr(extractor, attr):
+        raise RuntimeError(
+            f"SkillExtractor is missing expected attribute {attr!r} — "
+            f"the installed esco-skill-extractor version doesn't match what "
+            f"this scorer was written against. Available attributes: "
+            f"{[a for a in dir(extractor) if not a.startswith('__')]}"
+        )
+
 print("Model and ESCO skill embeddings loaded.")
 
 
