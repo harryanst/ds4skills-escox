@@ -1,3 +1,4 @@
+
 """
 Custom ESCOX scoring server.
 
@@ -30,8 +31,22 @@ from esco_skill_extractor import SkillExtractor
 TOP_K = int(os.environ.get("ESCOX_TOP_K", "3"))     # candidates kept per clause
 FLOOR = float(os.environ.get("ESCOX_FLOOR", "0.3")) # absolute safety floor
 
-print("Loading SkillExtractor with its own defaults...")
-extractor = SkillExtractor()
+
+class SkillOnlyExtractor(SkillExtractor):
+    """We only ever score skills, never occupations — skip loading/embedding
+    the occupations taxonomy entirely to cut memory use on constrained hosts
+    (e.g. Render's free tier, ~512MB)."""
+
+    def _load_occupations(self):
+        self._occupations = None
+        self._occupation_ids = []
+
+    def _create_occupation_embeddings(self):
+        self._occupation_embeddings = None
+
+
+print("Loading SkillExtractor (skills only) with its own defaults...")
+extractor = SkillOnlyExtractor()
 
 for attr in ("_model", "_skill_embeddings", "_skill_ids", "device"):
     if not hasattr(extractor, attr):
